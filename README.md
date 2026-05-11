@@ -6,7 +6,8 @@ Interactive 3D Cell Biology Explorer — built with Three.js.
 
 Explore 8 types of biological cells with high-fidelity 3D models, interactive organelle inspection, and educational content. Switch between code-generated models and imported GLB specimens from the [NIH 3D Print Exchange](https://3d.nih.gov).
 
-![Screenshot](docs/screenshot.png)
+<img width="3827" height="1836" alt="image" src="https://github.com/user-attachments/assets/e0fc3b74-a427-4a3a-957d-d70a77098815" />
+
 
 ## Features
 
