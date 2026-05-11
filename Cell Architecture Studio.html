@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cell Architecture Studio</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS2DRenderer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,'Segoe UI','Microsoft YaHei',sans-serif;background:#F5F0E8;color:#2C2822;overflow:hidden;height:100vh}
+.ld{position:fixed;inset:0;background:#F5F0E8;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s}
+.ld.h{opacity:0;pointer-events:none}
+.sp{width:48px;height:48px;border-radius:50%;border:3px solid #E8E2D6;border-top-color:#7B68AE;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.lb{margin-top:16px;font-size:14px;color:#6B6358}
+.tb{height:56px;background:#FAF7F2;border-bottom:1px solid #E8E2D6;display:flex;align-items:center;padding:0 20px;gap:12px;position:relative;z-index:10}
+.tl{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#7B68AE,#C4B5E0)}
+.tt{font-size:18px;font-weight:700}
+.ts{font-size:11px;color:#7B68AE;font-style:italic;margin-left:4px}
+.tf{flex:1}
+.tn{display:flex;gap:4px}
+.tn button{padding:6px 14px;border:none;background:transparent;border-radius:8px;font-size:13px;font-weight:500;color:#6B6358;cursor:pointer;transition:200ms;font-family:inherit}
+.tn button:hover{background:#F0EBE1}
+.tn button.a{background:#7B68AE;color:#fff}
+.vp{position:absolute;top:56px;left:280px;right:320px;bottom:0;overflow:hidden}
+#cv{width:100%;height:100%;display:block}
+#cv canvas{display:block}
+.lp{position:absolute;top:56px;left:0;width:280px;bottom:0;background:#FAF7F2;border-right:1px solid #E8E2D6;overflow-y:auto;padding:12px;z-index:5}
+.ci{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:200ms}
+.ci:hover{background:#F0EBE1}
+.ci.a{background:#F0EBF8}
+.cii{width:16px;height:16px;border-radius:4px}
+.cin{flex:1}
+.cinm{font-size:13px;font-weight:600}
+.cid{font-size:11px;color:#6B6358}
+.sh{font-size:11px;color:#9B9184;margin:20px 4px 8px;font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.oi{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;transition:120ms;font-size:12px}
+.oi:hover{background:#F0EBE1}
+.oi.a{background:#F0EBF8;color:#7B68AE;font-weight:500}
+.odd{width:8px;height:8px;border-radius:2px}
+.rp{position:absolute;top:56px;right:0;width:320px;bottom:0;background:#FAF7F2;border-left:1px solid #E8E2D6;overflow-y:auto;padding:16px;z-index:5}
+.ohh{display:flex;align-items:center;gap:10px;padding:10px;background:#FFF;border-radius:8px;box-shadow:0 1px 3px rgba(44,40,34,.06);margin-bottom:8px}
+.ohii{width:32px;height:32px;border-radius:8px}
+.ohnn{font-size:15px;font-weight:700}
+.ohdd{font-size:12px;color:#6B6358}
+.drr{display:flex;justify-content:space-between;padding:6px 10px;font-size:13px;border-bottom:1px solid #E8E2D6}
+.dll{color:#6B6358}
+.dvv{font-weight:500}
+.bnn{padding:10px;background:#FFF;border-radius:8px;font-size:13px;line-height:1.5;color:#6B6358}
+.nhh{margin-top:8px;padding:8px 10px;background:#F0EBF8;border-radius:6px;font-size:12px;color:#7B68AE;font-weight:500}
+.md{padding:4px;background:#F0EBE1;border-radius:8px;display:flex;gap:2px}
+.md button{padding:5px 12px;font-size:12px;font-weight:600;border:none;background:transparent;border-radius:6px;cursor:pointer;color:#6B6358;transition:120ms;font-family:inherit}
+.md button.a{background:#FAF7F2;box-shadow:0 1px 2px rgba(0,0,0,.08);color:#2C2822}
+.lbl{color:#2C2822;font-size:11px;font-weight:600;background:rgba(250,247,242,.85);padding:2px 8px;border-radius:4px;border:1px solid #E8E2D6;pointer-events:none;white-space:nowrap;backdrop-filter:blur(4px)}
+.lbl-det{color:#7B68AE;font-size:10px;font-weight:400}
+@media(max-width:900px){.lp{width:200px}.rp{width:250px}.vp{left:200px;right:250px}}
+@media(max-width:600px){.lp{display:none}.rp{width:200px}.vp{left:0;right:200px}}
+
+.bp{position:absolute;bottom:0;left:280px;right:320px;height:180px;background:#FAF7F2;border-top:1px solid #E8E2D6;display:flex;gap:1px;z-index:5;overflow:hidden}
+.bs{flex:1;padding:12px;overflow-y:auto}
+.bs+.bs{border-left:1px solid #E8E2D6}
+.bh{font-size:11px;color:#9B9184;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.bg{display:flex;gap:8px}
+.mc{flex:1;border-radius:8px;overflow:hidden;background:#FFF;box-shadow:0 1px 3px rgba(44,40,34,.06);cursor:pointer;transition:200ms}
+.mc:hover{box-shadow:0 2px 8px rgba(44,40,34,.12)}
+.mc canvas{display:block;width:100%}
+.ml{text-align:center;font-size:11px;color:#6B6358;padding:4px}
+.cg{display:flex;align-items:center;justify-content:center;gap:16px}
+.cc{text-align:center;flex:1}
+.ce{width:48px;height:48px;border-radius:12px;margin:0 auto 6px}
+.cn{font-size:12px;font-weight:600}
+.ct{font-size:10px;color:#9B9184}
+.cv{font-size:20px;font-weight:700;color:#7B68AE}
+.ff{margin-top:12px;padding:12px;background:#F0EBF8;border-radius:8px;font-size:12px;color:#7B68AE;line-height:1.5}
+.ffb{font-weight:700;margin-bottom:4px}
+@media(max-width:900px){.bp{left:200px;right:250px}}
+@media(max-width:600px){.bp{display:none}}
+
+
+.mi{position:absolute;top:8px;right:12px;z-index:20}
+.mi-btn{padding:6px 12px;border:1px solid #E8E2D6;background:#FAF7F2;border-radius:8px;font-size:12px;color:#6B6358;cursor:pointer;transition:200ms;font-family:inherit;display:flex;align-items:center;gap:6px}
+.mi-btn:hover{background:#F0EBE1;border-color:#7B68AE}
+.mi-panel{position:absolute;top:44px;right:0;width:280px;background:#FAF7F2;border:1px solid #E8E2D6;border-radius:12px;box-shadow:0 4px 16px rgba(44,40,34,.12);padding:16px;display:none;z-index:21}
+.mi-panel.show{display:block}
+.mi-title{font-size:14px;font-weight:600;margin-bottom:8px}
+.mi-desc{font-size:12px;color:#6B6358;margin-bottom:12px;line-height:1.5}
+.mi-drop{border:2px dashed #E8E2D6;border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:200ms}
+.mi-drop:hover,.mi-drop.over{border-color:#7B68AE;background:#F0EBF8}
+.mi-drop-icon{font-size:24px;margin-bottom:8px}
+.mi-drop-text{font-size:12px;color:#6B6358}
+.mi-status{margin-top:8px;font-size:11px;color:#9B9184;text-align:center}
+.mi-status.ok{color:#5A9E6F}
+.mi-status.err{color:#D4845A}
+.mi-reset{margin-top:8px;width:100%;padding:6px;border:1px solid #E8E2D6;background:#FAF7F2;border-radius:6px;font-size:11px;color:#6B6358;cursor:pointer;transition:200ms}
+.mi-reset:hover{background:#F0EBE1}
+
+
+.gi{position:absolute;top:8px;left:50%;transform:translateX(-50%);padding:4px 12px;background:#7B68AE;color:#fff;border-radius:12px;font-size:11px;font-weight:600;display:none;z-index:15}
+.gi.show{display:block}
+
+</style>
+</head>
+<body>
+<div class="ld" id="ldd"><div class="sp"></div><div class="lb">Loading 3D Cells...</div></div>
+<div class="tb">
+<div class="tl"></div><div class="tt">Cell Studio<span class="ts">3D</span></div>
+<div class="tf"></div>
+<div class="md" id="ms"><button class="a" onclick="swM('mesh')">Mesh</button><button onclick="swM('focus')">Focus</button></div>
+<div class="tn"><button onclick="rV()">⟳ Rotate</button><button onclick="tCS()">◐ Section</button><div class="gi" id="gbi">GLB Model</div>
+</div>
+<div class="mi">
+<button class="mi-btn" onclick="tIP()">📦 Import GLB</button>
+<div class="mi-panel" id="mip">
+<div class="mi-title">Import 3D Model</div>
+<div class="mi-desc">Upload a .glb or .gltf file to replace the current cell model with high-fidelity geometry.</div>
+<div class="mi-drop" id="mid" onclick="document.getElementById('gif').click()">
+<div class="mi-drop-icon">🔬</div>
+<div class="mi-drop-text">Click or drag .glb/.gltf here</div>
+<input type="file" id="gif" accept=".glb,.gltf" style="display:none" onchange="hGI(this)">
+</div>
+<div class="mi-status" id="mis"></div>
+<button class="mi-reset" id="mir" onclick="rGI()" style="display:none">↺ Reset to Code-Generated Model</button>
+</div>
+</div>
+</div>
+<div class="lp">
+<div class="sh">Cell Types</div>
+<div id="cl"></div>
+<div class="sh" style="margin-top:16px">Organelles</div>
+<div id="oll"></div>
+</div>
+<div class="vp"><div id="cv"></div></div>
+<div class="rp">
+<div class="sh" id="vtt">Neuron</div>
+<div id="od" style="margin-top:12px"></div>
+<div class="sh" style="margin-top:16px">NOTES</div>
+<div id="bns" class="bnn"></div>
+</div>
+<div class="bp" id="bp">
+<div class="bs" id="msv"><div class="bh">Microscope Views</div><div class="bg" id="mvb"></div></div>
+<div class="bs" id="csp"><div class="bh">Comparison</div><div class="cg" id="cmb"></div></div>
+</div>
+<script>var CT=[
+{id:"plant",nm:"Plant Cell",ds:"Eukaryotic Cell",bg:"#E8F5E9",cm:"animal",occ:"Leaves, stems, roots"},
+{id:"wbc",nm:"White Blood Cell",ds:"Immune Cell",bg:"#E3F2FD",cm:"epi",occ:"Blood, lymph, tissues"},
+{id:"neuron",nm:"Neuron",ds:"Nerve Cell",bg:"#F0EBF8",cm:"muscle",occ:"Brain, spinal cord, nerves"},
+{id:"epi",nm:"Epithelial",ds:"Human Tissue Cell",bg:"#FFF3E0",cm:"wbc",occ:"Skin, gut lining"},
+{id:"bac",nm:"Bacteria",ds:"Prokaryotic Cell",bg:"#E0F7FA",cm:"animal",occ:"Everywhere on Earth"},
+{id:"animal",nm:"Animal Cell",ds:"Eukaryotic Cell",bg:"#FCE4EC",cm:"plant",occ:"All animal tissues"},
+{id:"muscle",nm:"Muscle Cell",ds:"Myocyte",bg:"#F3E5F5",cm:"neuron",occ:"Bones, heart walls"},
+{id:"rb",nm:"Red Blood Cell",ds:"Erythrocyte",bg:"#FFEBEE",cm:"wbc",occ:"Blood vessels"}];var ORG={neuron:[
+{id:"nucleus",nm:"Nucleus",st:"Genetic control center",cl:"#7B68AE",
+ at:[{l:"Size",v:"6-10 μm"},{l:"Location",v:"Central"},{l:"Visible (LM)",v:"Yes"}],
+ nt:"The nucleus is surrounded by a double membrane called the nuclear envelope, which contains pores that regulate molecular traffic between the nucleus and cytoplasm.",ft:"The nucleus was one of the first cell structures ever discovered, in 1831 by Robert Brown."},
+{id:"mitochondria",nm:"Mitochondria",st:"Energy powerhouse",cl:"#D4845A",
+ at:[{l:"Size",v:"0.5-10 μm"},{l:"Quantity",v:"Thousands"},{l:"Visible (LM)",v:"Yes"}],
+ nt:"Mitochondria have their own DNA and are thought to have originated from ancient symbiotic bacteria. They produce ATP through oxidative phosphorylation.",ft:"Muscle cells can contain over 5,000 mitochondria."},
+{id:"er",nm:"ER (Nissl Body)",st:"Protein synthesis network",cl:"#5B8CC4",
+ at:[{l:"Type",v:"Rough & Smooth"},{l:"Location",v:"Perinuclear"},{l:"Visible",v:"Special stain"}],
+ nt:"The rough ER (Nissl substance) is covered with ribosomes and is the primary site of protein synthesis in neurons.",ft:"Proteins made in the soma must travel up to 1 meter down the axon."},
+{id:"golgi",nm:"Golgi Apparatus",st:"Protein sorting center",cl:"#5A9E6F",
+ at:[{l:"Size",v:"2-5 μm"},{l:"Location",v:"Near nucleus"},{l:"Function",v:"Packaging"}],
+ nt:"The Golgi apparatus modifies, sorts, and packages proteins for transport to different destinations within or outside the cell.",ft:"Named after Camillo Golgi who discovered it in 1898."},
+{id:"lysosome",nm:"Lysosome",st:"Cellular waste processor",cl:"#D4845A",
+ at:[{l:"Size",v:"0.1-1.2 μm"},{l:"Location",v:"Throughout cytoplasm"},{l:"pH",v:"~4.5"}],
+ nt:"Lysosomes contain digestive enzymes that break down waste materials, cellular debris, and foreign particles.",ft:"Defective lysosome function is linked to neurodegenerative diseases."},
+{id:"ribosome",nm:"Ribosomes",st:"Protein factories",cl:"#8B7355",
+ at:[{l:"Size",v:"20-30 nm"},{l:"Type",v:"80S"},{l:"Location",v:"ER & free"}],
+ nt:"Ribosomes read mRNA and synthesize proteins. They can be attached to the ER or float freely in the cytoplasm.",ft:"A single cell may contain millions of ribosomes."}],
+
+plant:[
+{id:"nucleus",nm:"Nucleus",st:"Genetic control center",cl:"#7B68AE",
+ at:[{l:"Size",v:"5-10 μm"},{l:"Location",v:"Peripheral (pushed)"}, {l:"Visible (LM)",v:"Yes"}],
+ nt:"In mature plant cells, the nucleus is often pushed to the periphery by the large central vacuole, unlike animal cells where it sits centrally.",ft:"Some plant cells can be polyploid, containing multiple sets of chromosomes."},
+{id:"chloroplast",nm:"Chloroplast",st:"Photosynthesis factory",cl:"#5A9E6F",
+ at:[{l:"Size",v:"2-10 μm"},{l:"Pigment",v:"Chlorophyll"},{l:"Visible",v:"Green, obvious"}],
+ nt:"Chloroplasts convert light energy into chemical energy through photosynthesis. They contain their own DNA and are thought to have evolved from cyanobacteria.",ft:"A single leaf cell can contain dozens of chloroplasts."},
+{id:"vacuole",nm:"Central Vacuole",st:"Storage & turgor pressure",cl:"#A8C8E8",
+ at:[{l:"Volume",v:"Up to 80% of cell"},{l:"Content",v:"Water & solutes"},{l:"Function",v:"Turgor"}],
+ nt:"The central vacuole stores water, ions, and small molecules while helping maintain the cell's structural integrity through turgor pressure.",ft:"Vacuoles can occupy most of a mature plant cell's volume."},
+{id:"cellwall",nm:"Cell Wall",st:"Rigid structural frame",cl:"#8B7355",
+ at:[{l:"Material",v:"Cellulose"},{l:"Thickness",v:"0.1-10 μm"},{l:"Visible",v:"Yes"}],
+ nt:"The cell wall gives plant cells their regular shape and protects the plasma membrane. It's made primarily of cellulose fibers.",ft:"Cell walls help plants stand upright without a skeleton."},
+{id:"mitochondria",nm:"Mitochondria",st:"Energy production",cl:"#D4845A",
+ at:[{l:"Size",v:"0.5-3 μm"},{l:"Location",v:"Cytoplasm"},{l:"Note",v:"With chloroplasts"}],
+ nt:"Plant cells have both mitochondria and chloroplasts. Mitochondria are still needed for energy production, especially at night when photosynthesis stops.",ft:"Plant mitochondria are essential for cellular respiration day and night."}],
+
+wbc:[
+{id:"nucleus",nm:"Lobed Nucleus",st:"Flexible genome vault",cl:"#7B68AE",
+ at:[{l:"Shape",v:"Multi-lobed"},{l:"Size",v:"8-12 μm"},{l:"Visible",v:"Purple with stain"}],
+ nt:"Many white blood cells have a lobed nucleus that helps them squeeze through tight spaces between blood vessel walls to reach infection sites.",ft:"Nuclear shape is one key clue used to identify immune cell types under a microscope."},
+{id:"lysosome",nm:"Lysosome",st:"Pathogen destruction",cl:"#D4845A",
+ at:[{l:"Size",v:"0.1-1.2 μm"},{l:"Content",v:"Digestive enzymes"},{l:"Role",v:"Breakdown"}],
+ nt:"In white blood cells, lysosomes fuse with phagosomes to form phagolysosomes, where engulfed pathogens are destroyed by powerful enzymes.",ft:"White blood cells rely heavily on lysosomal vesicles for defense."},
+{id:"mitochondria",nm:"Mitochondria",st:"Motility energy",cl:"#D4845A",
+ at:[{l:"Size",v:"0.5-3 μm"},{l:"Location",v:"Throughout cell"},{l:"Role",v:"Movement"}],
+ nt:"White blood cells use amoeboid movement to migrate through tissues, reaching speeds of about 20 μm per minute, powered by mitochondria.",ft:"Neutrophils can travel from blood to infection site in minutes."}],
+
+epi:[
+{id:"nucleus",nm:"Nucleus",st:"Genetic center",cl:"#7B68AE",
+ at:[{l:"Size",v:"5-8 μm"},{l:"Position",v:"Basal"},{l:"Note",v:"Orientation marker"}],
+ nt:"In epithelial cells, the nucleus sits near the base of the cell, which helps pathologists identify the orientation of the tissue layer.",ft:"The basal position of the nucleus is a hallmark of healthy epithelium."},
+{id:"golgi",nm:"Golgi Apparatus",st:"Secretion center",cl:"#5A9E6F",
+ at:[{l:"Size",v:"2-5 μm"},{l:"Location",v:"Supranuclear"},{l:"Role",v:"Mucus secretion"}],
+ nt:"In glandular epithelial cells, the Golgi apparatus is particularly prominent, processing mucus and other secretory products.",ft:"Mucus-producing epithelial cells have especially large Golgi complexes."},
+{id:"mitochondria",nm:"Mitochondria",st:"Active transport energy",cl:"#D4845A",
+ at:[{l:"Location",v:"Basal region"},{l:"Role",v:"Ion pumps"},{l:"Note",v:"Renal epithelium rich"}],
+ nt:"Epithelial cells in the kidney have abundant mitochondria to power ion transport pumps that filter and reabsorb substances.",ft:"Renal tubular epithelial cells are packed with mitochondria."}],
+
+bac:[
+{id:"nucleoid",nm:"Nucleoid",st:"Free-floating DNA",cl:"#7B68AE",
+ at:[{l:"Shape",v:"Irregular region"},{l:"DNA",v:"Circular"},{l:"Note",v:"No membrane"}],
+ nt:"Unlike eukaryotic cells, bacteria have no nuclear membrane. Their DNA is concentrated in an irregular region called the nucleoid.",ft:"The absence of a membrane-bound nucleus defines prokaryotes."},
+{id:"ribosome",nm:"Ribosomes",st:"Protein synthesis",cl:"#8B7355",
+ at:[{l:"Size",v:"20 nm"},{l:"Type",v:"70S"},{l:"Note",v:"Antibiotic target"}],
+ nt:"Bacterial ribosomes (70S) differ from eukaryotic ones (80S), which is why many antibiotics can target bacteria without harming human cells.",ft:"The 70S vs 80S difference is the basis for selective antibiotic action."},
+{id:"flagella",nm:"Flagella",st:"Propulsion motor",cl:"#D4845A",
+ at:[{l:"Length",v:"~20 μm"},{l:"Speed",v:"Up to 100 μm/s"},{l:"Type",v:"Rotary"}],
+ nt:"Bacterial flagella are rotary motors, spinning like propellers to drive the cell through liquid environments at remarkable speeds.",ft:"Bacterial flagella rotate at up to 1,500 RPM."},
+{id:"capsule",nm:"Capsule",st:"Protective outer layer",cl:"#A8C8E8",
+ at:[{l:"Material",v:"Polysaccharide"},{l:"Function",v:"Immune evasion"},{l:"Visible",v:"Negative stain"}],
+ nt:"The capsule is a sticky outer layer that helps bacteria adhere to surfaces and evade the host immune system.",ft:"Capsule presence is a key virulence factor in many pathogenic bacteria."}],
+
+animal:[
+{id:"nucleus",nm:"Nucleus",st:"Genetic control",cl:"#7B68AE",
+ at:[{l:"Size",v:"5-10 μm"},{l:"Location",v:"Central"},{l:"Visible",v:"Yes"}],
+ nt:"The animal cell nucleus contains the complete genome and is the site of DNA replication, transcription, and ribosome assembly.",ft:"The nucleus produces ribosomal RNA (rRNA) in the nucleolus."},
+{id:"mitochondria",nm:"Mitochondria",st:"ATP production",cl:"#D4845A",
+ at:[{l:"Size",v:"0.5-3 μm"},{l:"DNA",v:"Own mtDNA"},{l:"Origin",v:"Endosymbiotic"}],
+ nt:"Mitochondria are the powerhouses of animal cells, generating most of the cell's ATP through oxidative phosphorylation.",ft:"Mitochondria have their own DNA, supporting the endosymbiotic theory."},
+{id:"er",nm:"Endoplasmic Reticulum",st:"Synthesis & transport",cl:"#5B8CC4",
+ at:[{l:"Types",v:"Rough & Smooth"},{l:"Location",v:"Perinuclear"},{l:"Note",v:"Liver detox"}],
+ nt:"The rough ER synthesizes proteins while the smooth ER is involved in lipid synthesis and detoxification, especially in liver cells.",ft:"The smooth ER in liver cells detoxifies drugs and alcohol."},
+{id:"golgi",nm:"Golgi Apparatus",st:"Protein post office",cl:"#5A9E6F",
+ at:[{l:"Size",v:"2-5 μm"},{l:"Function",v:"Sorting & shipping"},{l:"Location",v:"Near nucleus"}],
+ nt:"The Golgi apparatus modifies proteins with carbohydrates and lipids, then packages them into vesicles for delivery to their destination.",ft:"Named the 'post office' of the cell."}],
+
+muscle:[
+{id:"myofibril",nm:"Myofibrils",st:"Contractile machinery",cl:"#D4845A",
+ at:[{l:"Size",v:"1-2 μm diameter"},{l:"Unit",v:"Sarcomere"},{l:"Visible",v:"Striated"}],
+ nt:"Myofibrils are long cylindrical structures composed of repeating sarcomeres. The sliding of actin and myosin filaments within sarcomeres produces contraction.",ft:"A single muscle cell can contain hundreds of myofibrils."},
+{id:"nucleus",nm:"Nuclei",st:"Multiple control centers",cl:"#7B68AE",
+ at:[{l:"Number",v:"Many (multinucleated)"},{l:"Position",v:"Peripheral"},{l:"Note",v:"Local domains"}],
+ nt:"Muscle cells (fibers) are multinucleated, formed by the fusion of precursor cells. Each nucleus manages a local domain of the cytoplasm.",ft:"Muscle fiber formation involves fusion of many myoblasts."},
+{id:"mitochondria",nm:"Mitochondria",st:"Energy for contraction",cl:"#D4845A",
+ at:[{l:"Density",v:"Very high"},{l:"Location",v:"Between myofibrils"},{l:"Note",v:"Cardiac especially rich"}],
+ nt:"Muscle cells are packed with mitochondria to meet the enormous energy demands of contraction. Cardiac muscle cells have the highest density.",ft:"Heart muscle cells can be 35% mitochondria by volume."},
+{id:"sr",nm:"Sarcoplasmic Reticulum",st:"Calcium storage",cl:"#5B8CC4",
+ at:[{l:"Type",v:"Specialized ER"},{l:"Function",v:"Ca²⁺ release"},{l:"Location",v:"Around myofibrils"}],
+ nt:"The sarcoplasmic reticulum is a specialized form of ER that stores and releases calcium ions, which trigger muscle contraction.",ft:"Calcium release from the SR is the key signal for muscle contraction."}],
+
+rb:[
+{id:"hgb",nm:"Hemoglobin",st:"Oxygen transport",cl:"#D4845A",
+ at:[{l:"Size",v:"~5 nm"},{l:"Quantity",v:"~270 million/cell"},{l:"Content",v:"Iron"}],
+ nt:"Hemoglobin is an iron-containing protein that binds oxygen in the lungs and releases it in tissues. Its iron atoms give blood its red color.",ft:"A single red blood cell carries about 270 million hemoglobin molecules."},
+{id:"membrane",nm:"Cell Membrane",st:"Flexible biconcave disc",cl:"#7B68AE",
+ at:[{l:"Thickness",v:"~7.5 nm"},{l:"Shape",v:"Biconcave disc"},{l:"Feature",v:"Highly deformable"}],
+ nt:"The RBC membrane is exceptionally flexible, allowing the cell to deform and squeeze through capillaries narrower than itself.",ft:"RBCs can deform to pass through capillaries as small as 3 μm."},
+{id:"no_nucleus",nm:"Anucleate",st:"No nucleus (mature)",cl:"#9B9184",
+ at:[{l:"Reason",v:"More space for hemoglobin"},{l:"Lifespan",v:"~120 days"},{l:"Note",v:"Ejected during maturation"}],
+ nt:"Mature red blood cells lack a nucleus, which provides more room for hemoglobin. The nucleus is ejected during the final stages of red blood cell development in bone marrow.",ft:"Without a nucleus, RBCs cannot divide or repair themselves, limiting their lifespan to about 120 days."}]};
+
+// Preloaded GLB models from reference project
+var GLB_MODELS = {
+  animal: "models/animal-cell-nih.glb",
+  bac: "models/bacteria-wall-nih.glb",
+  neuron: "models/neuron-nih.glb",
+  plant: "models/plant-cell-first001.glb",
+  wbc: "models/white-blood-cell-user.glb"
+};
+let curCell="neuron",selOrg=null,mode="mesh",rotAngle=0,rotating=true,csOn=false;
+let scene,camera,renderer,lblRenderer,controls,cellGrp,clock;
+const rc=new THREE.Raycaster(),ptr=new THREE.Vector2();
+let hoverObj=null,selObj=null,fcTarget=null;
+
+
+function init(){clock=new THREE.Clock();scene=new THREE.Scene();scene.background=new THREE.Color(0xF5F0E8);
+camera=new THREE.PerspectiveCamera(45,1,0.1,100);camera.position.set(4,3,8);
+renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+document.getElementById('cv').appendChild(renderer.domElement);
+lblRenderer=new THREE.CSS2DRenderer();lblRenderer.setSize(1,1);
+lblRenderer.domElement.style.position='absolute';lblRenderer.domElement.style.top='0';lblRenderer.domElement.style.pointerEvents='none';
+document.getElementById('cv').appendChild(lblRenderer.domElement);
+controls=new THREE.OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;controls.dampingFactor=0.08;controls.minDistance=2;controls.maxDistance=15;
+controls.autoRotate=false;controls.autoRotateSpeed=0.5;controls.target.set(0,0,0);
+scene.add(new THREE.AmbientLight(0xffffff,0.45));
+var d=new THREE.DirectionalLight(0xffffff,1.1);d.position.set(5,10,7);d.castShadow=true;
+d.shadow.mapSize.set(1024,1024);scene.add(d);
+scene.add(new THREE.HemisphereLight(0xF5F0E8,0x2C2822,0.35));
+var rim=new THREE.DirectionalLight(0xC4B5E0,0.35);rim.position.set(-3,0,5);scene.add(rim);
+var spot=new THREE.SpotLight(0xffffff,0.3,20,Math.PI/4,0.5);spot.position.set(0,8,0);spot.target.position.set(0,0,0);scene.add(spot);
+var pt=new THREE.PointLight(0xC4B5E0,0.2,10);pt.position.set(-4,2,4);scene.add(pt);
+var ground=new THREE.Mesh(new THREE.PlaneGeometry(20,20),new THREE.ShadowMaterial({opacity:0.12}));
+ground.rotation.x=-Math.PI/2;ground.position.y=-1.2;ground.receiveShadow=true;scene.add(ground);
+window.addEventListener('resize',rSize);
+renderer.domElement.addEventListener('pointermove',pMove);
+renderer.domElement.addEventListener('pointerdown',pDown);
+buildCell(curCell);rSize();hideLoad();}
+function rSize(){var v=document.getElementById('cv'),w=v.clientWidth,h=v.clientHeight;
+if(w<1||h<1)return;camera.aspect=w/h;camera.updateProjectionMatrix();
+renderer.setSize(w,h);lblRenderer.setSize(w,h);}
+function hideLoad(){document.getElementById('ldd').classList.add('h')}
+var floatTime=0;
+function animate(){requestAnimationFrame(animate);var dt=clock.getDelta();floatTime+=dt*0.5;
+controls.update();
+if(cellGrp){cellGrp.position.y=Math.sin(floatTime)*0.03;}
+renderer.render(scene,camera);lblRenderer.render(scene,camera);}
+function mMat(cl,tr,em,seg){return new THREE.MeshPhysicalMaterial({color:parseInt(cl.replace('#',''),16),transparent:!!tr,opacity:tr||1,emissive:new THREE.Color(em||cl),emissiveIntensity:em?0.2:0.05,roughness:seg?0.28:0.3,metalness:0.05,envMapIntensity:0.4,clearcoat:seg?0.3:0,clearcoatRoughness:0.4})}
+function mS(r,cl,tr,sg){var s=sg||48;return new THREE.Mesh(new THREE.SphereGeometry(r,s,s),mMat(cl,tr,0,1))}
+function mT(r,t,cl,tr){return new THREE.Mesh(new THREE.TorusGeometry(r,t,16,32),mMat(cl,tr))}
+function mC(r1,r2,h,cl,tr){return new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,16),mMat(cl,tr))}
+function mK(p,cl,tr,r){r=r||0.04;var c=new THREE.CatmullRomCurve3(p);return new THREE.Mesh(new THREE.TubeGeometry(c,32,r,12,false),mMat(cl,tr))}
+function mCaps(r,h,cl,tr){var g=new THREE.SphereGeometry(r,24,24);g.scale(1,1+h/r,1);return new THREE.Mesh(g,mMat(cl,tr))}
+function mBox(w,h,d,cl,tr){return new THREE.Mesh(new THREE.BoxGeometry(w,h,d,1,1,1),mMat(cl,tr))}
+function mNuc(r,cl){var g=new THREE.Group();g.add(mS(r,cl,0.3,48));var nuc=new THREE.Mesh(new THREE.SphereGeometry(r*0.35,24,24),mMat('#B56AD8',0.2,1,1));nuc.position.set(r*0.3,r*0.25,r*0.3);g.add(nuc);return g}
+function lbl(txt,color){var d=document.createElement('div');d.className='lbl';d.textContent=txt;if(color)d.style.borderColor=color;return new THREE.CSS2DObject(d)}
+function detLbl(txt,sub){var d=document.createElement('div');d.className='lbl';d.innerHTML=txt+' <span class="lbl-det">'+sub+'</span>';return new THREE.CSS2DObject(d)}
+function buildNeuron(){var g=new THREE.Group();var b=mS(1.0,'#7B68AE',0.08,48);b.userData={o:'mem'};g.add(b);
+var nuc=mNuc(0.35,'#7B68AE');nuc.position.set(-0.1,0,0);nuc.userData={o:'nucleus'};g.add(nuc);
+var axPts=[];for(var i=0;i<10;i++)axPts.push(new THREE.Vector3(0,0,0));
+axPts.push(new THREE.Vector3(1.2,0.1,0));axPts.push(new THREE.Vector3(1.8,-0.1,0.05));
+var axon=mK(axPts,'#7B68AE',0.1,0.06);axon.userData={o:'axon'};g.add(axon);
+for(var i=0;i<8;i++){var a=i*Math.PI*2/8;var p=[];p.push(new THREE.Vector3(0,0,0));
+for(var j=1;j<6;j++){var t=j/6;p.push(new THREE.Vector3(Math.cos(a)*t*1.6+Math.sin(a*3+j)*0.12,Math.sin(a)*t*1.6+Math.cos(a*2+j)*0.12,Math.sin(j*1.5)*0.12))}
+var d=mK(p,'#7B68AE',0.12,0.045);d.userData={o:'dendrite'};g.add(d)}
+for(var i=0;i<3;i++){var mt=mCaps(0.05,0.15,'#D4845A',0.5);mt.position.set(0.3+i*0.15,0.2+i*0.1,0.15+i*0.05);mt.rotation.set(Math.random(),Math.random(),Math.random());mt.userData={o:'mitochondria'};g.add(mt)}
+for(var i=0;i<4;i++){var ls=mS(0.04,'#D4845A',0.4);ls.position.set(-0.3+Math.random()*0.3,-0.15+Math.random()*0.3,0.2+Math.random()*0.2);ls.userData={o:'lysosome'};g.add(ls)}
+var gol=new THREE.Mesh(new THREE.TorusGeometry(0.1,0.025,16,32),mMat('#5A9E6F',0.3));gol.position.set(0.15,-0.2,0.2);gol.rotation.x=Math.PI/4;gol.userData={o:'golgi'};g.add(gol);
+return g}
+function buildPlant(){var g=new THREE.Group();
+var w=new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5,4,4,4),new THREE.MeshPhysicalMaterial({color:0x8B7355,transparent:true,opacity:0.06,wireframe:true,roughness:0.5}));w.userData={o:'cellwall'};g.add(w);
+var v=mS(0.55,'#A8C8E8',0.08,48);v.userData={o:'vacuole'};g.add(v);
+var nuc=mNuc(0.22,'#7B68AE');nuc.position.set(0.35,0.25,0.1);nuc.userData={o:'nucleus'};g.add(nuc);
+for(var i=0;i<6;i++){var a=i*Math.PI*2/6;var c=mS(0.09,'#5A9E6F',0.25,32);c.position.set(Math.cos(a)*0.55,Math.sin(a)*0.5+0.05,0.2+Math.sin(i)*0.1);c.userData={o:'chloroplast'};g.add(c)}
+var mito=mCaps(0.06,0.18,'#D4845A',0.4);mito.position.set(0.3,-0.3,0.15);mito.rotation.z=Math.PI/4;mito.userData={o:'mitochondria'};g.add(mito);
+return g}
+function buildWBC(){var g=new THREE.Group();
+var b=mS(0.9,'#5B8CC4',0.08,48);b.userData={o:'mem'};g.add(b);
+var n1=new THREE.Mesh(new THREE.SphereGeometry(0.25,32,32),mMat('#7B68AE',0.4));n1.position.set(-0.12,0.05,0);n1.scale.set(1,0.7,0.8);n1.userData={o:'nucleus'};g.add(n1);
+var n2=new THREE.Mesh(new THREE.SphereGeometry(0.2,32,32),mMat('#7B68AE',0.35));n2.position.set(0.18,-0.1,0.12);n2.scale.set(0.8,0.6,0.7);n2.userData={o:'nucleus'};g.add(n2);
+var n3=new THREE.Mesh(new THREE.SphereGeometry(0.18,32,32),mMat('#7B68AE',0.3));n3.position.set(-0.05,-0.25,-0.05);n3.scale.set(0.7,0.5,0.6);n3.userData={o:'nucleus'};g.add(n3);
+for(var i=0;i<10;i++){var a=i*Math.PI*2/10;var l=mS(0.035,'#D4845A',0.3,24);l.position.set(Math.cos(a)*0.5+Math.random()*0.05,Math.sin(a)*0.5+Math.random()*0.05,Math.random()*0.15-0.075);l.userData={o:'lysosome'};g.add(l)}
+var gran=new THREE.Mesh(new THREE.SphereGeometry(0.05,24,24),mMat('#C06696',0.35));gran.position.set(0.25,0.2,0.1);gran.userData={o:'granules'};g.add(gran);
+return g}function buildBac(){var g=new THREE.Group();
+var b=new THREE.Mesh(new THREE.SphereGeometry(0.35,16,16),mMat('#A8C8E8',0.1));b.rotation.x=Math.PI/2;b.userData={o:'capsule'};g.add(b);
+var inner=new THREE.Mesh(new THREE.SphereGeometry(0.32,16,16),mMat('#A8C8E8',0.05));inner.rotation.x=Math.PI/2;g.add(inner);
+var nuc=mS(0.15,'#7B68AE',0.3,32);nuc.position.set(0,0,0);nuc.userData={o:'nucleoid'};g.add(nuc);
+var fp=[];for(var i=0;i<12;i++)fp.push(new THREE.Vector3(0,-0.45-i*0.08,Math.sin(i*0.8)*0.15));
+var f=mK(fp,'#D4845A',0.5,0.03);f.userData={o:'flagella'};g.add(f);
+for(var i=0;i<15;i++){var rb=mS(0.015,'#8B7355',0.3,16);rb.position.set(Math.random()*0.5-0.25,Math.random()*0.5-0.25,Math.random()*0.3-0.15);rb.userData={o:'ribosome'};g.add(rb)}
+return g}
+function buildAnimal(){var g=new THREE.Group();
+var b=mS(1.0,'#FCE4EC',0.08,48);b.userData={o:'mem'};g.add(b);
+var nuc=mNuc(0.4,'#7B68AE');nuc.userData={o:'nucleus'};g.add(nuc);
+var mito=mCaps(0.06,0.18,'#D4845A',0.5);mito.position.set(0.4,0.15,0.2);mito.rotation.z=0.5;mito.userData={o:'mitochondria'};g.add(mito);
+var mito2=mCaps(0.05,0.15,'#D4845A',0.4);mito2.position.set(-0.3,-0.25,0.15);mito2.rotation.z=-0.3;mito2.userData={o:'mitochondria'};g.add(mito2);
+var erPts=[];for(var i=0;i<6;i++)erPts.push(new THREE.Vector3(Math.cos(i*1.05)*0.35,Math.sin(i*1.4)*0.3,i*0.15-0.35));
+var er=mK(erPts,'#5B8CC4',0.2,0.035);er.userData={o:'er'};g.add(er);
+for(var i=0;i<4;i++){var gi=new THREE.Mesh(new THREE.TorusGeometry(0.08,0.025,16,32),mMat('#5A9E6F',0.3));gi.position.set(0.25,-0.2,0.35+i*0.04);gi.userData={o:'golgi'};g.add(gi)}
+var ly=mS(0.05,'#D4845A',0.35);ly.position.set(0.15,0.35,-0.1);ly.userData={o:'lysosome'};g.add(ly);
+return g}
+function buildMuscle(){var g=new THREE.Group();
+var b=new THREE.Mesh(new THREE.SphereGeometry(0.5,24,24),mMat('#D4845A',0.06));b.rotation.x=Math.PI/2;b.userData={o:'myofibril'};g.add(b);
+for(var x=-0.6;x<=0.6;x+=0.1){var s=new THREE.Mesh(new THREE.CylinderGeometry(0.012,0.012,0.85,8),mMat('#D4845A',0.15));s.position.set(x,0,0);s.rotation.z=Math.PI/2;s.userData={o:'myofibril'};g.add(s)}
+var nuc=mS(0.12,'#7B68AE',0.4,32);nuc.position.set(-0.4,-0.15,0.1);nuc.userData={o:'nucleus'};g.add(nuc);
+var nuc2=mS(0.1,'#7B68AE',0.35,32);nuc2.position.set(0.3,-0.12,-0.1);nuc2.userData={o:'nucleus'};g.add(nuc2);
+for(var i=0;i<3;i++){var mt=mCaps(0.05,0.12,'#D4845A',0.5);mt.position.set(-0.2+i*0.2,0.2,i*0.05);mt.rotation.z=0.3;mt.userData={o:'mitochondria'};g.add(mt)}
+var srPts=[];for(var i=0;i<5;i++)srPts.push(new THREE.Vector3(Math.cos(i*1.3)*0.3,Math.sin(i*1.1)*0.2,i*0.15-0.3));
+var sr=mK(srPts,'#5B8CC4',0.15,0.03);sr.userData={o:'sr'};g.add(sr);
+return g}
+function buildEpi(){var g=new THREE.Group();
+var b=mS(0.7,'#FFF3E0',0.06,48);b.scale.set(1.3,0.55,1.1);b.userData={o:'mem'};g.add(b);
+var nuc=mS(0.2,'#7B68AE',0.4,32);nuc.position.set(0,-0.12,0);nuc.userData={o:'nucleus'};g.add(nuc);
+var nuc2=mS(0.08,'#B56AD8',0.2,24);nuc2.position.set(0.06,-0.08,0.05);g.add(nuc2);
+var go=new THREE.Mesh(new THREE.TorusGeometry(0.07,0.025,16,32),mMat('#5A9E6F',0.3));go.position.set(0,0.08,0.25);go.rotation.x=Math.PI/4;go.userData={o:'golgi'};g.add(go);
+var mito=mCaps(0.04,0.1,'#D4845A',0.4);mito.position.set(-0.15,-0.2,0.1);mito.rotation.z=0.4;mito.userData={o:'mitochondria'};g.add(mito);
+return g}
+function buildRB(){var g=new THREE.Group();
+var bodyGeo=new THREE.TorusGeometry(0.5,0.22,24,48);
+var body=new THREE.Mesh(bodyGeo,mMat('#D4845A',0.12,0.05,1));body.userData={o:'mem'};g.add(body);
+for(var i=0;i<30;i++){var h=mS(0.018,'#D4845A',0.2,16);h.position.set(Math.random()*0.6-0.3,Math.random()*0.2-0.1,Math.random()*0.3-0.15);h.userData={o:'hgb'};g.add(h)}
+return g}
+function buildCell(type){if(cellGrp&&scene){scene.remove(cellGrp)}
+cellGrp=new THREE.Group();var b={neuron:buildNeuron,plant:buildPlant,wbc:buildWBC,bac:buildBac,animal:buildAnimal,muscle:buildMuscle,epi:buildEpi,rb:buildRB}[type];
+if(b){var m=b();cellGrp.add(m)}if(scene)scene.add(cellGrp)}
+
+function render(){
+document.getElementById('cl').innerHTML=CT.map(function(x){return '<div class="ci'+(x.id===curCell?' a':'')+'" onclick="sel(\''+x.id+'\')"><div class="cii" style="background:'+x.bg+'"></div><div class="cin"><div class="cinm">'+x.nm+'</div><div class="cid">'+x.ds+'</div></div></div>';}).join('');
+var ct=CT.find(function(x){return x.id===curCell});document.getElementById('vtt').textContent=ct.nm;
+ud();renderAll();
+if(!glbLoaded)buildCell(curCell);}
+
+function sel(id){
+curCell=id;selOrg=null;mode='mesh';
+document.querySelectorAll('#ms button').forEach(function(b){b.classList.remove('a')});
+document.getElementById('ms').children[0].classList.add('a');
+// If a preloaded GLB exists for this cell type, load it
+if(window._GLB_CACHE && window._GLB_CACHE[id]){
+  loadPreloadedGLB(id);
+  render();
+  return;
+}
+// If no GLB for this cell type, reset to code-generated model
+if(glbLoaded){
+  // Properly remove old GLB model from scene
+  if(cellGrp && scene){
+    scene.remove(cellGrp);
+  }
+  glbLoaded=false;
+  cellGrp=null;
+  document.getElementById('gbi').classList.remove('show');
+}
+render();}
+
+function ud(){var o=ORG[curCell]||ORG.neuron;var item=selOrg?o.find(function(x){return x.id===selOrg}):o[0];
+if(!item){document.getElementById('od').innerHTML='<div style="color:var(--t3);font-size:12px;padding:10px">Select an organelle</div>';return}
+document.getElementById('od').innerHTML='<div class="ohh"><div class="ohii" style="background:'+item.cl+'22"></div><div><div class="ohnn">'+item.nm+'</div><div class="ohdd">'+item.ds+'</div></div></div>';
+document.getElementById('bns').innerHTML='Selected: '+item.nm+'<div class="nhh">Click the organelle in 3D view or select from list above.</div>'}
+
+function pMove(e){var r=renderer.domElement.getBoundingClientRect();
+ptr.x=((e.clientX-r.left)/r.width)*2-1;ptr.y=-((e.clientY-r.top)/r.height)*2+1;
+rc.setFromCamera(ptr,camera);var o=cellGrp?rc.intersectObjects(cellGrp.children,true):[];
+if(o.length&&o[0].object.userData.o){var obj=o[0].object;
+if(hoverObj&&hoverObj!==obj){hOv(hoverObj,false)}
+hOv(obj,true);hoverObj=obj;renderer.domElement.style.cursor='pointer'}
+else{if(hoverObj){hOv(hoverObj,false);hoverObj=null;renderer.domElement.style.cursor='default'}
+hOv(null,false)}lblRenderer.render(scene,camera)}
+
+function pDown(e){if(!hoverObj||!hoverObj.userData.o)return
+selOrg=hoverObj.userData.o;render();fcView()}
+
+function hOv(obj,on){if(!obj||!obj.material)return
+if(on){obj.material.emissiveIntensity=0.5;showLbl(obj)}else{obj.material.emissiveIntensity=obj.userData._eI||0.05;hideLbl(obj)}}
+
+function showLbl(obj){var o=findOrg(obj.userData.o);if(!o)return
+var l=lbl(o.nm);l.position.copy(obj.position);l.userData={for:obj.uuid};cellGrp.add(l)}
+
+function hideLbl(obj){if(!cellGrp)return;cellGrp.children.forEach(function(c){if(c.isCSS2DObject&&c.userData.for===obj.uuid)cellGrp.remove(c)})}
+
+function findOrg(id){if(!id)return null;var o=ORG[curCell]||ORG.neuron;return o.find(function(x){return x.id===id})}
+
+function fcView(){if(mode!=='mesh')return
+if(!hoverObj||!hoverObj.userData.o)return
+selOrg=hoverObj.userData.o;mode='focus';
+var b=document.querySelectorAll('#ms button');b[0].classList.remove('a');b[1].classList.add('a');
+var pos=new THREE.Vector3();hoverObj.getWorldPosition(pos);
+controls.target.copy(pos);
+if(cellGrp){
+var selId=hoverObj.userData.o;
+cellGrp.traverse(function(obj){
+if(obj.isMesh){
+var oid=obj.userData.o;
+if(oid===selId){
+obj.material.emissiveIntensity=0.6;obj.material.opacity=Math.min(obj.material.opacity*1.3,1);obj.scale.setScalar(1.15);
+}else{
+obj.material.opacity=0.15;obj.material.emissiveIntensity=0;
+}
+}});}
+var targetPos=new THREE.Vector3(pos.x+1.5,pos.y+1.5,pos.z+1.5);
+fcAnim(camera.position.clone(),targetPos,controls.target.clone(),700);ud()}
+
+function fcAnim(from,to,ta,dur){var s=Date.now();
+function step(){var t=Math.min((Date.now()-s)/dur,1);
+var e=t<0.5?2*t*t:-1+(4-2*t)*t;
+camera.position.lerpVectors(from,to,e);controls.target.copy(ta);
+if(t<1)requestAnimationFrame(step)}step()}
+
+function exitFC(){mode='mesh';selOrg=null;
+var b=document.querySelectorAll('#ms button');b[1].classList.remove('a');b[0].classList.add('a');
+if(cellGrp){
+cellGrp.traverse(function(obj){
+if(obj.isMesh){obj.material.opacity=0.08;obj.material.emissiveIntensity=0.05;obj.scale.setScalar(1);}
+});
+cellGrp.children[0].traverse(function(obj){
+if(obj.isMesh){obj.material.opacity=0.08;obj.material.emissiveIntensity=0.05;obj.scale.setScalar(1);}
+});}
+fcAnim(camera.position.clone(),new THREE.Vector3(4,3,8),new THREE.Vector3(0,0,0),600);renderAll();}
+
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&mode==='focus')exitFC()});
+
+
+function swM(m){if(m==='focus'&&selOrg)fcView();else if(m==='mesh')exitFC()}
+function rV(){if(controls)controls.autoRotate=!controls.autoRotate}
+function tCS(){csOn=!csOn}
+
+// GLB Import System
+var glbLoader=null,glbLoaded=false,glbFile=null;
+
+function tIP(){var p=document.getElementById('mip');p.classList.toggle('show')}
+
+function hGI(input){if(!input.files||!input.files[0])return;
+var file=input.files[0];if(!file.name.match(/\.(glb|gltf)$/i)){sS('err','Only .glb and .gltf files supported');return}
+glbFile=file;sS('ok','Loading '+file.name+'...');loadGLB(file)}
+
+function loadGLB(file){
+if(!glbLoader)glbLoader=new THREE.GLTFLoader();
+var reader=new FileReader();
+reader.onload=function(e){
+glbLoader.parse(e.target.result,'',function(gltf){
+if(cellGrp&&scene){scene.remove(cellGrp)}
+var model=gltf.scene;
+// Center and scale model
+model.traverse(function(node){
+if(node.isMesh){
+node.castShadow=true;node.receiveShadow=true;
+if(node.material){
+node.material.transparent=node.material.transparent||false;
+node.material.opacity=node.material.opacity||1;
+node.material.emissiveIntensity=0.05;
+}
+node.userData.o='model_'+node.name;
+}});
+// Auto-center
+var box=new THREE.Box3().setFromObject(model);
+var center=box.getCenter(new THREE.Vector3());
+var size=box.getSize(new THREE.Vector3());
+var maxDim=Math.max(size.x,size.y,size.z);
+var scale=2/maxDim;
+model.scale.setScalar(scale);
+model.position.sub(center.multiplyScalar(scale));
+cellGrp=new THREE.Group();
+cellGrp.add(model);
+scene.add(cellGrp);
+glbLoaded=true;
+sS('ok','✓ Model loaded! '+file.name);
+document.getElementById('gbi').classList.add('show');
+document.getElementById('mir').style.display='block';
+rSize();
+},function(err){sS('err','Parse error: '+err.message)},
+function(err){sS('err','Load error: '+err.message)})};
+reader.readAsArrayBuffer(file)}
+
+function rGI(){
+glbLoaded=false;glbFile=null;
+document.getElementById('mir').style.display='none';
+document.getElementById('gbi').classList.remove('show');
+sS('','');
+if(cellGrp&&scene){scene.remove(cellGrp)}
+cellGrp=null;
+buildCell(curCell);
+rSize()}
+
+function sS(type,msg){
+var el=document.getElementById('mis');
+el.textContent=msg;el.className='mi-status'+(type?' '+type:'')}
+
+// Drag and drop support
+(function(){
+var drop=document.getElementById('mid');
+if(!drop)return;
+drop.addEventListener('dragover',function(e){e.preventDefault();drop.classList.add('over')});
+drop.addEventListener('dragleave',function(){drop.classList.remove('over')});
+drop.addEventListener('drop',function(e){
+e.preventDefault();drop.classList.remove('over');
+if(e.dataTransfer.files&&e.dataTransfer.files[0]){
+var input=document.getElementById('gif');
+input.files=e.dataTransfer.files;hGI(input)}})})();
+
+
+// Preload all GLB models on startup
+function preloadGLBs(){
+  if(typeof THREE === 'undefined' || !THREE.GLTFLoader) return;
+  var loader = new THREE.GLTFLoader();
+  var loaded = 0;
+  var total = Object.keys(GLB_MODELS).length;
+  for(var key in GLB_MODELS){
+    (function(k){
+      loader.load(GLB_MODELS[k], function(gltf){
+        window._GLB_CACHE = window._GLB_CACHE || {};
+        window._GLB_CACHE[k] = gltf;
+        loaded++;
+        if(loaded === total){
+          console.log("All " + total + " GLB models preloaded");
+          // If no GLB was manually loaded, auto-load current cell's GLB
+          if(!glbLoaded && GLB_MODELS[curCell]){
+            loadPreloadedGLB(curCell);
+          }
+        }
+      }, undefined, function(err){
+        console.warn("Failed to preload GLB for " + k + ": " + err.message);
+        loaded++;
+      });
+    })(key);
+  }
+}
+
+// Load a preloaded GLB model for a cell type
+function loadPreloadedGLB(cellId){
+  if(!window._GLB_CACHE || !window._GLB_CACHE[cellId]){
+    console.warn("GLB model not cached for " + cellId);
+    return;
+  }
+  var gltf = window._GLB_CACHE[cellId];
+  // Clean up any existing cell group
+  if(cellGrp && scene){
+    scene.remove(cellGrp);
+  }
+  // Also remove any stray groups that might be left over
+  var toRemove = [];
+  scene.children.forEach(function(child){
+    if(child.isGroup && child !== cellGrp){
+      toRemove.push(child);
+    }
+  });
+  toRemove.forEach(function(g){scene.remove(g)});
+  
+  var model = gltf.scene.clone();
+  model.traverse(function(node){
+    if(node.isMesh){
+      node.castShadow = true;
+      node.receiveShadow = true;
+      if(node.material){
+        node.material.transparent = node.material.transparent || false;
+        node.material.opacity = node.material.opacity || 1;
+        node.material.emissiveIntensity = 0.05;
+      }
+      node.userData.o = 'model_' + node.name;
+    }
+  });
+  // Auto-center and scale
+  var box = new THREE.Box3().setFromObject(model);
+  var center = box.getCenter(new THREE.Vector3());
+  var size = box.getSize(new THREE.Vector3());
+  var maxDim = Math.max(size.x, size.y, size.z);
+  var scale = 2.0 / maxDim;
+  model.scale.setScalar(scale);
+  model.position.sub(center.multiplyScalar(scale));
+  cellGrp = new THREE.Group();
+  cellGrp.add(model);
+  scene.add(cellGrp);
+  glbLoaded = true;
+  console.log("Loaded preloaded GLB for " + cellId);
+  document.getElementById('gbi').classList.add('show');
+}
+
+setTimeout(function(){init();render();animate();preloadGLBs();},50);
+
+function renderMV(){
+var cell=CT.find(function(x){return x.id===curCell});if(!cell)return;
+var views=[{n:"Light Microscope",t:"l",cl:cell.bg},{n:"Stained",t:"s",cl:cell.cm?"#F0EBF8":"#E8E8E8"},{n:"Electron",t:"e",cl:"#E0E0E0"}];
+var h="";for(var i=0;i<views.length;i++){h+='<div class="mc"><canvas id="mc'+i+'" width="200" height="80"></canvas><div class="ml">'+views[i].n+'</div></div>';}
+document.getElementById('mvb').innerHTML=h;
+setTimeout(function(){for(var j=0;j<views.length;j++){var c=document.getElementById('mc'+j);if(c)drawMV(c,views[j].t,views[j].cl)}},50);}
+
+function drawMV(canvas,type,bg){
+var ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
+ctx.fillStyle=bg||'#F5EDE0';ctx.fillRect(0,0,w,h);
+var cx=w/2,cy=h/2,r=Math.min(w,h)*0.32;
+if(type==='e'){
+ctx.fillStyle='#C0C0C0';ctx.beginPath();ctx.ellipse(cx,cy,r,r*0.5,0,0,Math.PI*2);ctx.fill();
+ctx.strokeStyle='#888';ctx.lineWidth=1;ctx.stroke();
+ctx.fillStyle='#999';ctx.beginPath();ctx.ellipse(cx,cy,r*0.3,r*0.18,0,0,Math.PI*2);ctx.fill();
+if(curCell==='plant'){ctx.fillStyle='#7A9';ctx.beginPath();ctx.ellipse(cx+r*0.4,cy-r*0.2,r*0.12,r*0.08,0.3,0,Math.PI*2);ctx.fill();}
+}else if(type==='s'){
+var ct=CT.find(function(x){return x.id===curCell});ctx.fillStyle=ct?ct.bg:'#F0E8F5';ctx.fillRect(0,0,w,h);
+ctx.fillStyle='#C4B5E0';ctx.beginPath();ctx.ellipse(cx,cy,r,r*0.5,0,0,Math.PI*2);ctx.fill();
+ctx.fillStyle='#7B68AE';ctx.beginPath();ctx.ellipse(cx,cy,r*0.35,r*0.2,0,0,Math.PI*2);ctx.fill();
+for(var i=0;i<5;i++){var a=i*Math.PI*2/5;ctx.fillStyle='#D4845A';ctx.beginPath();ctx.arc(cx+Math.cos(a)*r*0.5,cy+Math.sin(a)*r*0.35,r*0.06,0,Math.PI*2);ctx.fill();}
+}else{
+var cl=CT.find(function(x){return x.id===curCell});ctx.fillStyle=cl?cl.bg:'#F5E6D0';ctx.fillRect(0,0,w,h);
+ctx.fillStyle=cl?cl.bg+'88':'#F5E6D0';ctx.beginPath();
+if(curCell==='rb'){ctx.ellipse(cx,cy,r,r*0.35,0,0,Math.PI*2);}
+else if(curCell==='bac'){ctx.ellipse(cx,cy,r*0.8,r*0.35,0,0,Math.PI*2);}
+else{ctx.ellipse(cx,cy,r,r*0.5,0,0,Math.PI*2);}
+ctx.fill();ctx.fillStyle='#E8D5C0';ctx.beginPath();ctx.ellipse(cx,cy,r*0.3,r*0.18,0,0,Math.PI*2);ctx.fill();
+}}
+
+function renderComp(){
+var cell=CT.find(function(x){return x.id===curCell});if(!cell)return;
+var compId=cell.cm||'animal';var comp=CT.find(function(x){return x.id===compId});if(!comp)return;
+var h='<div class="cc"><div class="ce" style="background:'+cell.bg+'"></div><div class="cn">'+cell.nm+'</div><div class="ct">'+cell.ds+'</div></div>';
+h+='<div class="cv">VS</div>';
+h+='<div class="cc"><div class="ce" style="background:'+comp.bg+'"></div><div class="cn">'+comp.nm+'</div><div class="ct">'+comp.ds+'</div></div>';
+document.getElementById('cmb').innerHTML=h;}
+
+function renderAll(){
+var o=ORG[curCell]||ORG.neuron;
+document.getElementById('oll').innerHTML=o.map(function(x){return '<div class="oi'+(selOrg===x.id?' a':'')+'" onclick="selOrg=\''+x.id+'\';renderAll();ud();fcView()"><div class="odd" style="background:'+x.cl+'"></div>'+x.nm+'</div>';}).join('');
+renderMV();renderComp();}
+
+function ud(){
+var o=ORG[curCell]||ORG.neuron;var item=selOrg?o.find(function(x){return x.id===selOrg}):o[0];
+if(!item){document.getElementById('od').innerHTML='<div style="color:#9B9184;font-size:12px;padding:10px">Select an organelle</div>';document.getElementById('bns').innerHTML='';return;}
+document.getElementById('od').innerHTML='<div class="ohh"><div class="ohii" style="background:'+item.cl+'22"></div><div><div class="ohnn">'+item.nm+'</div><div class="ohdd">'+item.st+'</div></div></div>';
+var at=item.at||[];var ath='';for(var i=0;i<at.length;i++){ath+='<div class="drr"><span class="dll">'+at[i].l+'</span><span class="dvv">'+at[i].v+'</span></div>';}
+document.getElementById('od').innerHTML+=ath;
+document.getElementById('bns').innerHTML='<div style="font-size:13px;line-height:1.6;color:#6B6358">'+item.nt+'</div>'+
+'<div class="ff"><div class="ffb">Fun Fact</div>'+item.ft+'</div>';
+}
+
+</script>
+</body>
+</html>

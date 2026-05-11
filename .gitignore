@@ -1,0 +1,22 @@
+# OpenClaw workspace files
+.openclaw/
+output/
+memory/
+preview/
+exports/
+specs/
+agents/
+scripts/
+
+# Fix scripts (development only)
+fix*.py
+phase*.py
+*.glb
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
